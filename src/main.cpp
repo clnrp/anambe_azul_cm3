@@ -180,10 +180,15 @@ int main(void)
 			pwm_m3 = 0;
 		}
 
-    	TIM_SetCompare1(TIM3, adjustMinMax(pwm_m1,0,500)); // PWM1 PC6_CH1 front left clockwise
-    	TIM_SetCompare4(TIM3, adjustMinMax(pwm_m4,0,500)); // PWM4 PC7_CH4 front right counter-clockwise
-    	TIM_SetCompare2(TIM3, adjustMinMax(pwm_m2,0,500)); // PWM2 PC8_CH2 rear left clockwise
-    	TIM_SetCompare3(TIM3, adjustMinMax(pwm_m3,0,500)); // PWM3 PC9_CH3 rear right counter-clockwise
+		pwm_m1 += 1000;
+		pwm_m4 += 1000;
+		pwm_m2 += 1000;
+		pwm_m3 += 1000;
+
+		TIM_SetCompare1(TIM3, adjustMinMax(pwm_m1, 1000, 2000)); // PWM1 PC6_CH1 front left clockwise
+		TIM_SetCompare4(TIM3, adjustMinMax(pwm_m4, 1000, 2000)); // PWM4 PC7_CH4 front right counter-clockwise
+		TIM_SetCompare2(TIM3, adjustMinMax(pwm_m2, 1000, 2000)); // PWM2 PC8_CH2 rear left clockwise
+		TIM_SetCompare3(TIM3, adjustMinMax(pwm_m3, 1000, 2000)); // PWM3 PC9_CH3 rear right counter-clockwise
 
     	if(cnt++ >= 200){ // print debug
         	cnt=0;
@@ -225,7 +230,7 @@ void RCC_Config(void)
 	RCC_HCLKConfig(RCC_SYSCLK_Div1);                         // HCLK = SYSCLK
 	RCC_PCLK2Config(RCC_HCLK_Div1);                          // PCLK2 = HCLK
 	RCC_PCLK1Config(RCC_HCLK_Div2);                          // PCLK1 = HCLK/2
-	RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_6);     // PLLCLK = 6MHz * 12 = 72 MHz.
+	RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_6);     // PLLCLK = 12MHz * 6 = 72 MHz.
 
 	/* ADCCLK = PCLK2/4 */
 	RCC_ADCCLKConfig(RCC_PCLK2_Div4);
@@ -302,7 +307,7 @@ void TIM2_Config(void)
 
 void PWM_TIM3_Config()
 {
-	uint16_t TimerPeriod = 500;
+	uint16_t TimerPeriod = 20000;
 	uint16_t ChannelPulse = 0;
 	GPIO_InitTypeDef  GPIO_InitStructure;
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -314,8 +319,14 @@ void PWM_TIM3_Config()
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
+    /*
+     *         TIM_Period * (TIM_Prescaler+1)
+     * period = -------------------------------
+     *                  72000000
+     */
+
     TIM_DeInit(TIM3);
-    TIM_TimeBaseStructure.TIM_Prescaler = 400;
+    TIM_TimeBaseStructure.TIM_Prescaler = 71;
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseStructure.TIM_Period = TimerPeriod;
     TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
